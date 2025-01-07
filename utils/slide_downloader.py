@@ -29,8 +29,20 @@ class SlideDownloader:
             raise Exception('Only HD, 4K and 8K resolutions allowed!')
         chrome_options.add_argument(res)
 
+        # Adding argument to disable the AutomationControlled flag 
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled") 
+        
+        # Exclude the collection of enable-automation switches 
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
+        
+        # Turn-off userAutomationExtension 
+        chrome_options.add_experimental_option("useAutomationExtension", False) 
+
         # Initializing the driver
         self.driver = webdriver.Chrome(options = chrome_options)
+
+        # Changing the property of the navigator value for webdriver to undefined 
+        self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     
 
     def _scrape_slides(self, n_slides, next_btn, slide_selector, pitch_dot_com = False):
@@ -68,17 +80,17 @@ class SlideDownloader:
         Given an URL, loops over slides to screenshot them and saves a PDF
         '''
 
-        url = url.lower()
-
         self.driver.get(url)
         time.sleep(10)
         
         pitch = False
-        if 'pitch.com' in url:
+        if 'pitch.com' in url.lower():
             params = sources.get_pitch_params(self.driver)
             pitch = True
-        elif 'canva.com' in url:
+        elif 'canva.com' in url.lower():
             params = sources.get_canva_params(self.driver)
+        elif 'docs.google.com/presentation/' in url.lower():
+            params = sources.get_gslides_params(self.driver)
         else:
             raise Exception('URL not supported...')
         

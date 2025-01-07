@@ -1,5 +1,5 @@
 from selenium.webdriver.common.by import By
-
+import time
 
 def get_canva_params(driver):
     '''
@@ -89,3 +89,21 @@ def pitch_at_slide_end(driver):
 
     return aria_valuenow == '100'
 
+
+
+def get_gslides_params(driver):
+
+    '''
+    Preprocesses Google Slides and returns params to find all slides
+    '''
+
+    content = driver.find_element(By.CLASS_NAME, 'punch-viewer-container')
+
+    n_slides_button = driver.find_elements(By.CSS_SELECTOR, "[aria-setsize]")[0]
+    n_slides = n_slides_button.get_attribute('aria-setsize')
+    
+    return dict(
+        n_slides = int(n_slides),
+        next_btn = content,
+        slide_selector = (By.CLASS_NAME, 'punch-viewer-svgpage-svgcontainer')
+    )
