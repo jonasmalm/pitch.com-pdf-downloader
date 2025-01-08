@@ -12,10 +12,13 @@ from utils import sources
 
 class SlideDownloader:
 
-    def __init__(self, resolution):
+    def __init__(self, resolution, disable_headless):
 
         chrome_options = Options()
-        # chrome_options.add_argument('--headless')
+        
+        if not disable_headless:
+            chrome_options.add_argument('--headless')
+        
         chrome_options.add_argument('--log-level=3')
 
         # Setting resolution
