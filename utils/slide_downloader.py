@@ -91,6 +91,8 @@ class SlideDownloader:
             params = sources.get_canva_params(self.driver)
         elif 'docs.google.com/presentation/' in url.lower():
             params = sources.get_gslides_params(self.driver)
+        elif 'figma.com/deck' in url.lower():
+            params = sources.get_figma_params(self.driver)
         else:
             raise Exception('URL not supported...')
         

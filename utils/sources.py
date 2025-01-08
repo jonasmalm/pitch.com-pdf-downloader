@@ -107,3 +107,23 @@ def get_gslides_params(driver):
         next_btn = content,
         slide_selector = (By.CLASS_NAME, 'punch-viewer-svgpage-svgcontainer')
     )
+
+def get_figma_params(driver):
+
+    '''
+    Preprocesses Figma presentation and returns params to find all slides
+    '''
+
+    next_btn = driver.find_elements(By.CSS_SELECTOR, '[aria-label="Next frame"]')[0]
+
+    slide_no_text = driver.find_elements(By.CSS_SELECTOR, '[role="status"]')[0].get_attribute('innerText')
+    print(slide_no_text)
+    n_slides = slide_no_text.split('/')[1].strip()
+
+
+    return dict(
+        n_slides = int(n_slides),
+        next_btn = next_btn,
+        slide_selector = (By.TAG_NAME, 'canvas') 
+
+    )

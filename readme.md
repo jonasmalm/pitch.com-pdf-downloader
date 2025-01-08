@@ -1,5 +1,10 @@
 # Download PDF from Pitch.com
-Simple python script to download a presentation from Pitch.com and Google Slides' "Publish to Web" mode as a searchable PDF. 
+Simple python script to download a presentations as searchable PDF. 
+
+## Supported platforms
+- Pitch.com 
+- Google Slides' "Publish to Web" mode
+- Figma Slides
 
 Previously had support for Canva, but now blocked by bot detection.
 
