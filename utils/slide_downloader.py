@@ -1,7 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-from PIL import Image
+from PIL import Image, ImageChops
 from io import BytesIO
 
 from tqdm import tqdm
@@ -45,7 +45,21 @@ class SlideDownloader:
         self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
     
 
-    def _scrape_slides(self, n_slides, next_btn, slide_selector, pitch_dot_com = False):
+    def _crop_black_borders(self, png):
+        """
+        Crops black borders from a PNG image.
+        """
+        img = Image.open(BytesIO(png)).convert("RGB")
+        bg = Image.new("RGB", img.size, (0, 0, 0))  # Black background for comparison
+        diff = ImageChops.difference(img, bg)
+        diff = ImageChops.add(diff, diff, 2.0, -100)
+        bbox = diff.getbbox()
+        if bbox:
+            return img.crop(bbox)
+        return img
+
+
+    def _scrape_slides(self, n_slides, next_btn, slide_selector, pitch_dot_com = False, skip_border_removal = False):
         '''
         Takes a screenshot of all slides and returns a list of pngs
 
@@ -65,7 +79,16 @@ class SlideDownloader:
                     time.sleep(1.5)
 
             slide = self.driver.find_element(*slide_selector)
-            png_slides.append(slide.screenshot_as_png)
+            png = slide.screenshot_as_png
+
+            if not skip_border_removal:
+                # Crop the screenshot to remove black borders
+                cropped_img = self._crop_black_borders(png)
+                buffer = BytesIO()
+                cropped_img.save(buffer, format="PNG")
+                png_slides.append(buffer.getvalue())
+            else:
+                png_slides.append(png)
 
             if n < n_slides - 1:
                 # Use JS in case it's hidden
@@ -75,7 +98,7 @@ class SlideDownloader:
         print('Slides scraped!')
         return png_slides
     
-    def download(self, url):
+    def download(self, url, skip_border_removal):
         '''
         Given an URL, loops over slides to screenshot them and saves a PDF
         '''
@@ -96,7 +119,11 @@ class SlideDownloader:
         else:
             raise Exception('URL not supported...')
         
-        png_slides = self._scrape_slides(params['n_slides'], params['next_btn'], params['slide_selector'], pitch_dot_com = pitch)
+        png_slides = self._scrape_slides(
+            params['n_slides'], params['next_btn'], params['slide_selector'], 
+            skip_border_removal = skip_border_removal, 
+            pitch_dot_com = pitch
+        )
 
         # Helper: Loading from memory and converting RGBA to RGB
         def _rgba_to_rgb(png):
