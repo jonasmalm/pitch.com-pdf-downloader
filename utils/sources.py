@@ -114,6 +114,14 @@ def get_figma_params(driver):
     Preprocesses Figma presentation and returns params to find all slides
     '''
 
+    # Removing the header so it doesn't show up on slides
+    header = driver.find_elements(By.CSS_SELECTOR, '[aria-label="Prototype controls"]')
+    if header:
+        driver.execute_script("""
+            var element = arguments[0];
+            element.parentNode.removeChild(element);
+        """, header[0])
+
     next_btn = driver.find_elements(By.CSS_SELECTOR, '[aria-label="Next frame"]')[0]
 
     slide_no_text = driver.find_elements(By.CSS_SELECTOR, '[role="status"]')[0].get_attribute('innerText')
