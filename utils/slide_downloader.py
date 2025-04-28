@@ -50,17 +50,21 @@ class SlideDownloader:
 
     def _crop_black_borders(self, png):
         """
-        Crops black borders from a PNG image.
+        Returns the bounding box for cropping black borders from a PNG image.
         """
         img = Image.open(BytesIO(png)).convert("RGB")
         bg = Image.new("RGB", img.size, (0, 0, 0))  # Black background for comparison
         diff = ImageChops.difference(img, bg)
         diff = ImageChops.add(diff, diff, 2.0, -100)
         bbox = diff.getbbox()
-        if bbox:
-            return img.crop(bbox)
-        return img
+        return bbox if bbox else (0, 0, img.size[0], img.size[1])
 
+    def _apply_consistent_cropping(self, png, bbox):
+        """
+        Applies the given bounding box to crop an image.
+        """
+        img = Image.open(BytesIO(png)).convert("RGB")
+        return img.crop(bbox)
 
     def _scrape_slides(self, n_slides, next_btn, slide_selector, pitch_dot_com = False, skip_border_removal = False):
         '''
@@ -83,15 +87,7 @@ class SlideDownloader:
 
             slide = self.driver.find_element(*slide_selector)
             png = slide.screenshot_as_png
-
-            if not skip_border_removal:
-                # Crop the screenshot to remove black borders
-                cropped_img = self._crop_black_borders(png)
-                buffer = BytesIO()
-                cropped_img.save(buffer, format="PNG")
-                png_slides.append(buffer.getvalue())
-            else:
-                png_slides.append(png)
+            png_slides.append(png)
 
             if n < n_slides - 1:
                 # Use JS in case it's hidden
@@ -99,7 +95,28 @@ class SlideDownloader:
                 time.sleep(1.5)
 
         print('Slides scraped!')
-        return png_slides
+
+        if not skip_border_removal:
+            # Find the minimum cropping needed across all slides
+            bboxes = [self._crop_black_borders(png) for png in png_slides]
+            # Find the largest bbox that fits all slides (min left/top, max right/bottom)
+            min_left = min(b[0] for b in bboxes)  # Take min of left edges
+            min_top = min(b[1] for b in bboxes)   # Take min of top edges
+            max_right = max(b[2] for b in bboxes) # Take max of right edges
+            max_bottom = max(b[3] for b in bboxes) # Take max of bottom edges
+            consistent_bbox = (min_left, min_top, max_right, max_bottom)
+            
+            # Apply consistent cropping to all slides
+            print('\nApplying consistent cropping...')
+            cropped_slides = []
+            for png in tqdm(png_slides):
+                cropped_img = self._apply_consistent_cropping(png, consistent_bbox)
+                buffer = BytesIO()
+                cropped_img.save(buffer, format="PNG")
+                cropped_slides.append(buffer.getvalue())
+            return cropped_slides
+        else:
+            return png_slides
     
     def download(self, url, skip_border_removal):
         '''
