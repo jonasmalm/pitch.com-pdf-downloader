@@ -5,8 +5,7 @@ Simple python script to download a presentations as searchable PDF.
 - Pitch.com 
 - Google Slides' "Publish to Web" mode
 - Figma Slides
-
-Previously had support for Canva, but now blocked by bot detection.
+- Canva
 
 ## Usage
 Install the requirements and run the script via:

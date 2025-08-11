@@ -23,9 +23,7 @@ def get_canva_params(driver):
     driver.execute_script("arguments[0].style.opacity = 0;", footer)
     driver.execute_script("arguments[0].style.opacity = 0;", header)
 
-    next_btn = driver.find_elements(By.TAG_NAME, 'button')[4]
-    if '/' in next_btn.text:
-        next_btn = driver.find_elements(By.TAG_NAME, 'button')[5]
+    next_btn = driver.find_element(By.XPATH, '//button[@aria-label="Next page"]')
     if next_btn.text != '':
         print('Found wrong next button...')
         print(next_btn.text)
