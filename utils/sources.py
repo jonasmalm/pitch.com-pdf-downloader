@@ -122,8 +122,9 @@ def get_figma_params(driver):
 
     next_btn = driver.find_elements(By.CSS_SELECTOR, '[aria-label="Next frame"]')[0]
 
-    slide_no_text = driver.find_elements(By.CSS_SELECTOR, '[role="status"]')[0].get_attribute('innerText')
-    print(slide_no_text)
+    slide_no = driver.find_elements(By.CSS_SELECTOR, '[class*="toolbelt_label"]')[0]
+    slide_no_text = slide_no.get_attribute('innerText')
+    print('Slide selector contents: ', slide_no_text)
     n_slides = slide_no_text.split('/')[1].strip()
 
 
@@ -133,3 +134,17 @@ def get_figma_params(driver):
         slide_selector = (By.TAG_NAME, 'canvas') 
 
     )
+
+def figma_get_slide_number(driver):
+
+    '''
+    Check if we're at the expected slide (Clicking next on a slide with video starts video and doesn't move to next slide)
+    '''
+
+    slide_no = driver.find_elements(By.CSS_SELECTOR, '[class*="toolbelt_label"]')[0]
+    slide_no_text = slide_no.get_attribute('innerText')
+    current_slide = slide_no_text.split('/')[0].strip()
+
+    current_slide = int(current_slide)
+
+    return current_slide

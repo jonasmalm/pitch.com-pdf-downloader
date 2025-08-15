@@ -66,22 +66,30 @@ class SlideDownloader:
         img = Image.open(BytesIO(png)).convert("RGB")
         return img.crop(bbox)
 
-    def _scrape_slides(self, n_slides, next_btn, slide_selector, pitch_dot_com = False, skip_border_removal = False):
+    def _scrape_slides(self, n_slides, next_btn, slide_selector, source, skip_border_removal = False):
         '''
         Takes a screenshot of all slides and returns a list of pngs
 
         n_slides: int, the number of slides
         next_btn: clickable element on website to go to the next slide
         slide_selector: arguments to driver.find_element to locate the slide e.g. (By.XPATH, xpath_string)
+        source: str, the source platform ('pitch.com', 'figma', etc.)
+        skip_border_removal: bool, whether to skip removing black borders around slides
         '''
 
         png_slides = []
         print('\nScraping slides...')
         for n in tqdm(range(n_slides)):
 
-            # Animations in pitch.com ...
-            if pitch_dot_com:
+            # Pitch.com special case: Animations takes multiple clicks
+            if source == 'pitch.com':
                 while not sources.pitch_at_slide_end(self.driver):
+                    self.driver.execute_script("arguments[0].click();", next_btn)
+                    time.sleep(1.5)
+            
+            # Figma special case: Videos takes multiple clicks
+            if source == 'figma':
+                while not sources.figma_get_slide_number(self.driver) == n + 1:
                     self.driver.execute_script("arguments[0].click();", next_btn)
                     time.sleep(1.5)
 
@@ -126,23 +134,26 @@ class SlideDownloader:
         self.driver.get(url)
         time.sleep(10)
         
-        pitch = False
+        source = ''
         if 'pitch.com' in url.lower():
             params = sources.get_pitch_params(self.driver)
-            pitch = True
+            source = 'pitch.com'
         elif 'canva.com' in url.lower():
             params = sources.get_canva_params(self.driver)
+            source = 'canva'
         elif 'docs.google.com/presentation/' in url.lower():
             params = sources.get_gslides_params(self.driver)
+            source = 'gslides'
         elif 'figma.com/deck' in url.lower():
             params = sources.get_figma_params(self.driver)
+            source = 'figma'
         else:
             raise Exception('URL not supported...')
         
         png_slides = self._scrape_slides(
             params['n_slides'], params['next_btn'], params['slide_selector'], 
             skip_border_removal = skip_border_removal, 
-            pitch_dot_com = pitch
+            source = source
         )
 
         # Helper: Loading from memory and converting RGBA to RGB
