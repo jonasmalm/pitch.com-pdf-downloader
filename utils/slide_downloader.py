@@ -126,6 +126,33 @@ class SlideDownloader:
         else:
             return png_slides
     
+    def _detect_source(self):
+        '''
+        Detects the source platform by checking for platform-specific indicators in the page content.
+        Returns a tuple of (source, params).
+        '''
+        # Check if it's a pitch.com presentation by looking for pitch.com script tags
+        try:
+            pitch_scripts = self.driver.find_elements("css selector", "script[src*='pitch.com/static']")
+            if pitch_scripts:
+                return 'pitch.com', sources.get_pitch_params(self.driver)
+        except:
+            pass
+        
+        # Check if it's a pitch.com presentation by URL
+        if 'pitch.com' in self.driver.current_url.lower():
+            return 'pitch.com', sources.get_pitch_params(self.driver)
+        
+        # Check other platforms by URL
+        if 'canva.com' in self.driver.current_url.lower():
+            return 'canva', sources.get_canva_params(self.driver)
+        elif 'docs.google.com/presentation/' in self.driver.current_url.lower():
+            return 'gslides', sources.get_gslides_params(self.driver)
+        elif 'figma.com/deck' in self.driver.current_url.lower():
+            return 'figma', sources.get_figma_params(self.driver)
+        
+        raise Exception('URL not supported...')
+
     def download(self, url, skip_border_removal):
         '''
         Given an URL, loops over slides to screenshot them and saves a PDF
@@ -134,21 +161,8 @@ class SlideDownloader:
         self.driver.get(url)
         time.sleep(10)
         
-        source = ''
-        if 'pitch.com' in url.lower():
-            params = sources.get_pitch_params(self.driver)
-            source = 'pitch.com'
-        elif 'canva.com' in url.lower():
-            params = sources.get_canva_params(self.driver)
-            source = 'canva'
-        elif 'docs.google.com/presentation/' in url.lower():
-            params = sources.get_gslides_params(self.driver)
-            source = 'gslides'
-        elif 'figma.com/deck' in url.lower():
-            params = sources.get_figma_params(self.driver)
-            source = 'figma'
-        else:
-            raise Exception('URL not supported...')
+        # Detect the source platform
+        source, params = self._detect_source()
         
         png_slides = self._scrape_slides(
             params['n_slides'], params['next_btn'], params['slide_selector'], 
