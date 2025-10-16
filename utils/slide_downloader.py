@@ -85,7 +85,7 @@ class SlideDownloader:
             if source == 'pitch.com':
                 while not sources.pitch_at_slide_end(self.driver):
                     self.driver.execute_script("arguments[0].click();", next_btn)
-                    time.sleep(1.5)
+                    time.sleep(2)
             
             # Figma special case: Videos takes multiple clicks
             if source == 'figma':
