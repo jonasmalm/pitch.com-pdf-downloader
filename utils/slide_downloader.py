@@ -153,20 +153,23 @@ class SlideDownloader:
         
         raise Exception('URL not supported...')
 
-    def download(self, url, skip_border_removal):
+    def download(self, url):
         '''
         Given an URL, loops over slides to screenshot them and saves a PDF
         '''
 
         self.driver.get(url)
         time.sleep(10)
-        
+
         # Detect the source platform
         source, params = self._detect_source()
-        
+
+        # Border removal is needed for all other sources, but breaks pitch.com
+        skip_border_removal = source == 'pitch.com'
+
         png_slides = self._scrape_slides(
-            params['n_slides'], params['next_btn'], params['slide_selector'], 
-            skip_border_removal = skip_border_removal, 
+            params['n_slides'], params['next_btn'], params['slide_selector'],
+            skip_border_removal = skip_border_removal,
             source = source
         )
 
