@@ -1,0 +1,12 @@
+[project]
+name = "pitch-to-pdf"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "ocrmypdf>=17.3.0",
+    "pillow>=12.1.1",
+    "selenium>=4.41.0",
+    "tqdm>=4.67.3",
+]
