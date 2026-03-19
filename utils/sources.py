@@ -25,9 +25,7 @@ def get_canva_params(driver):
 
     next_btn = driver.find_element(By.XPATH, '//button[@aria-label="Next page"]')
     if next_btn.text != '':
-        print('Found wrong next button...')
-        print(next_btn.text)
-        raise Exception('Wrong next button!')
+        raise Exception('Could not find the next button...')
     
     params = dict(
         n_slides = n_slides,
@@ -124,7 +122,6 @@ def get_figma_params(driver):
 
     slide_no = driver.find_elements(By.CSS_SELECTOR, '[class*="toolbelt_label"]')[0]
     slide_no_text = slide_no.get_attribute('innerText')
-    print('Slide selector contents: ', slide_no_text)
     n_slides = slide_no_text.split('/')[1].strip()
 
 
