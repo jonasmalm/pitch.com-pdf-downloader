@@ -50,6 +50,13 @@ def validate_url(url: str) -> str:
             "Invalid Figma URL. Expected format: https://www.figma.com/deck/your-deck-id"
         )
 
+    # Papermark
+    if 'papermark.com' in host:
+        import re
+        if not re.search(r'papermark\.com/view/[a-zA-Z0-9]+', url):
+            raise ValueError("Papermark URL must be in format: https://www.papermark.com/view/{id}")
+        return url
+
     raise ValueError(
-        "Unsupported URL. Supported platforms: pitch.com, Google Slides, Canva, Figma"
+        "Unsupported URL. Supported platforms: pitch.com, Google Slides, Canva, Figma, Papermark"
     )

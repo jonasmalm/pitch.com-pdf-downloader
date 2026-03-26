@@ -132,6 +132,44 @@ def get_figma_params(driver):
 
     )
 
+def get_papermark_params(driver):
+    '''
+    Preprocesses Papermark and returns params to find all slides
+    '''
+    spans = driver.find_elements(By.CSS_SELECTOR, 'div.bg-gray-900.text-white span')
+    n_slides = int(spans[-1].text) - 1
+    next_btn = driver.find_element(By.CSS_SELECTOR, 'div.group.absolute.right-0 button')
+
+    # Hide nav buttons, slide counter, and watermark so they don't appear in screenshots
+    driver.execute_script("""
+        // Left nav button
+        var left = document.querySelector('div.group.absolute.left-0');
+        if (left) left.style.visibility = 'hidden';
+        // Right nav button
+        var right = document.querySelector('div.group.absolute.right-0');
+        if (right) right.style.visibility = 'hidden';
+        // Slide counter
+        var counter = document.querySelector('div.bg-gray-900.text-white');
+        if (counter) counter.style.visibility = 'hidden';
+        // Papermark watermark
+        var watermark = document.querySelector('a[href*="utm_campaign=poweredby"]');
+        if (watermark) watermark.closest('div.absolute.bottom-0.right-0').style.visibility = 'hidden';
+    """)
+
+    # Target the visible slide img (parent div has 'flex' class; hidden slides have 'hidden' class)
+    slide_selector = (By.XPATH, '//div[contains(@class,"viewer-container") and not(contains(@class,"hidden"))]//img')
+    return dict(
+        n_slides=n_slides,
+        next_btn=next_btn,
+        slide_selector=slide_selector,
+    )
+
+
+def papermark_get_slide_number(driver):
+    spans = driver.find_elements(By.CSS_SELECTOR, 'div.bg-gray-900.text-white span')
+    return int(spans[0].text)
+
+
 def figma_get_slide_number(driver):
 
     '''
