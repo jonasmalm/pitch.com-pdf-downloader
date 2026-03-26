@@ -150,7 +150,9 @@ class SlideDownloader:
             return 'gslides', sources.get_gslides_params(self.driver)
         elif 'figma.com/deck' in self.driver.current_url.lower():
             return 'figma', sources.get_figma_params(self.driver)
-        
+        elif 'papermark.com' in self.driver.current_url.lower():
+            return 'papermark', sources.get_papermark_params(self.driver)
+
         raise Exception('URL not supported...')
 
     def download(self, url):
@@ -165,7 +167,7 @@ class SlideDownloader:
         source, params = self._detect_source()
 
         # Border removal is needed for all other sources, but breaks pitch.com
-        skip_border_removal = source == 'pitch.com'
+        skip_border_removal = source in ('pitch.com', 'papermark')
 
         png_slides = self._scrape_slides(
             params['n_slides'], params['next_btn'], params['slide_selector'],
