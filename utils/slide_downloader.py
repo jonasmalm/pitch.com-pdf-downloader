@@ -12,8 +12,9 @@ from utils import sources
 
 class SlideDownloader:
 
-    def __init__(self, resolution, disable_headless):
+    def __init__(self, resolution, disable_headless, email=None):
 
+        self.email = email
         chrome_options = Options()
         
         if not disable_headless:
@@ -151,7 +152,7 @@ class SlideDownloader:
         elif 'figma.com/deck' in self.driver.current_url.lower():
             return 'figma', sources.get_figma_params(self.driver)
         elif 'papermark.com' in self.driver.current_url.lower():
-            return 'papermark', sources.get_papermark_params(self.driver)
+            return 'papermark', sources.get_papermark_params(self.driver, email=self.email)
 
         raise Exception('URL not supported...')
 

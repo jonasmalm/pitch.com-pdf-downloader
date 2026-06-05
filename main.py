@@ -10,6 +10,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--resolution', help='The slide resolution, HD, 4K or 8K allowed', default='4K')
     parser.add_argument('--disable-headless', action='store_true', dest='disable_headless', help='Disable headless mode')
     parser.add_argument('--skip-ocr', action='store_true', dest='skip_ocr', help='Disable OCR')
+    parser.add_argument('--email', help='Email to submit if a Papermark link is gated')
     args = parser.parse_args()
 
     # Warn if Tesseract is missing and OCR is enabled
@@ -35,7 +36,7 @@ if __name__ == '__main__':
 
     # Saving the presentation as a PDF
     try:
-        sd = SlideDownloader(args.resolution, args.disable_headless)
+        sd = SlideDownloader(args.resolution, args.disable_headless, email=args.email)
         pdf_path = sd.download(url)
     except Exception as e:
         print(f"Error: {e}")

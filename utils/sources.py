@@ -132,10 +132,30 @@ def get_figma_params(driver):
 
     )
 
-def get_papermark_params(driver):
+def get_papermark_params(driver, email=None):
     '''
-    Preprocesses Papermark and returns params to find all slides
+    Preprocesses Papermark and returns params to find all slides.
+    If the deck is gated behind an email prompt, `email` is submitted.
     '''
+    # Email gate: some Papermark links require an email before showing the deck
+    email_inputs = driver.find_elements(By.CSS_SELECTOR, 'input[type="email"]')
+    if email_inputs:
+        if not email:
+            raise Exception(
+                'This Papermark link requires an email to view. '
+                'Re-run with --email <addr>.'
+            )
+        email_inputs[0].send_keys(email)
+        for b in driver.find_elements(By.TAG_NAME, 'button'):
+            if b.text.strip() in ('Continue', 'Submit'):
+                b.click()
+                break
+        # Wait for the slide counter to appear instead of a fixed sleep
+        for _ in range(30):
+            if driver.find_elements(By.CSS_SELECTOR, 'div.bg-gray-900.text-white span'):
+                break
+            time.sleep(0.5)
+
     spans = driver.find_elements(By.CSS_SELECTOR, 'div.bg-gray-900.text-white span')
     n_slides = int(spans[-1].text) - 1
     next_btn = driver.find_element(By.CSS_SELECTOR, 'div.group.absolute.right-0 button')
