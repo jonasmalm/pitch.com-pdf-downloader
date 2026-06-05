@@ -11,11 +11,13 @@ Simple python script to download a presentation as searchable PDF.
 ## Usage
 Install the requirements and run the script via:
 ```bash
-python main.py url [-r resolution] [--skip-ocr] [--disable-headless]
+python main.py url [-r resolution] [--skip-ocr] [--disable-headless] [--email email]
 ```
 
 Valid resolutions are HD, 4K and 8K. Default resolution is 4K.
 By default runs in headless mode.
 
+Papermark has support for email input; for other platforms run with the `--disable-headless` flag and manually input the email quickly.
+
 ## Requirements
-Base functionality requires Selenium, Pillow and tqdm. If you want OCR you also need to install ocrmypdf and it's dependencies. If you prefer not to, run the script with the --skip-ocr flag.  
+Base functionality requires Selenium, Pillow and tqdm. If you want OCR you also need to install ocrmypdf and it's dependencies. If you prefer not to, run the script with the --skip-ocr flag.
